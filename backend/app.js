@@ -1,3 +1,4 @@
+
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
@@ -6,13 +7,12 @@ const authRoutes = require('./routes/authRoutes');
 
 // const userRoutes = require("./routes/userRoutes");
 
-const app = express();
 
-// Middleware
-app.use(cors());
+
+const app = express();
 app.use(express.json());
 
-// Routes
+
 app.use("/api/auth", authRoutes);
 
 const db = require('./db');
@@ -23,5 +23,10 @@ db.query('SELECT 1 + 1 AS solution', (err, results) => {
   console.log('The solution is: ', results[0].solution);
 });
 
+const productRoutes = require('./routes/productRoutes');
+app.use('/products', productRoutes);
+
+
+app.listen(5000, () => console.log('Server running on port 5000'));
 
 module.exports = app;
