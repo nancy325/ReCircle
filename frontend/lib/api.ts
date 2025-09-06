@@ -136,6 +136,33 @@ export const productAPI = {
 
     return response.json();
   },
+
+  // Get products by user
+  getUserProducts: async (userId: string, page: number = 1, limit: number = 10) => {
+    const response = await fetch(`${API_BASE_URL}/api/products/user/${userId}?page=${page}&limit=${limit}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch user products');
+    }
+    return response.json();
+  },
+
+  // Get products by category
+  getProductsByCategory: async (categoryId: string, page: number = 1, limit: number = 10) => {
+    const response = await fetch(`${API_BASE_URL}/api/products/category/${categoryId}?page=${page}&limit=${limit}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch products by category');
+    }
+    return response.json();
+  },
+
+  // Search products
+  searchProducts: async (query: string, page: number = 1, limit: number = 10) => {
+    const response = await fetch(`${API_BASE_URL}/api/products/search?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`);
+    if (!response.ok) {
+      throw new Error('Failed to search products');
+    }
+    return response.json();
+  },
 };
 
 // Cart API functions
