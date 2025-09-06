@@ -401,3 +401,15 @@ export function AddProduct() {
     </div>
   )
 }
+
+const addProduct = async (product: any, token: string) => {
+  const res = await fetch('http://localhost:5000/api/products', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(product),
+  });
+  return await res.json();
+};

@@ -47,6 +47,12 @@ export function ProductFeed() {
     setSelectedCategory(categoryName)
   }
 
+  const fetchProducts = async () => {
+    const res = await fetch("http://localhost:5000/api/products")
+    const data = await res.json()
+    return data
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Hero Banner */}
