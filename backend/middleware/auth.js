@@ -4,18 +4,20 @@ const db = require('../db');
 const authenticateToken = async (req, res, next) => {
   try {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (!token) {
       return res.status(401).json({ error: 'Access token required' });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+    console.log("SECRET:", process.env.JWT_SECRET);
+console.log("Decoded:", decoded);
+
     // Verify user still exists in database
-    const [users] = await db.execute(
+    const [users] = await db.promise().query(
       'SELECT id, email, username FROM Users WHERE id = ?',
-      [decoded.userId]
+      [decoded.id]
     );
 
     if (users.length === 0) {
