@@ -172,14 +172,11 @@ exports.getProductById = async (req, res) => {
 // 3. Create new product (authenticated users only)
 exports.createProduct = async (req, res) => {
   try {
-    // Comment out user authentication for testing in Postman
-    // const userId = req.user?.id;
-    // if (!userId) {
-    //   return res.status(401).json(formatResponse(false, null, '', 'Unauthorized'));
-    // }
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json(formatResponse(false, null, '', 'Unauthorized'));
+    }
 
-    // For testing, use a fixed user ID (replace with a valid user from your DB)
-    const userId = 1; // <-- Set your test user ID here
     // Validate required fields
     const requiredFields = ['title', 'description', 'price', 'category_id', 'quantity', 'condition'];
     const missingFields = requiredFields.filter(field => !req.body[field]);
@@ -268,28 +265,24 @@ exports.createProduct = async (req, res) => {
 // 4. Update product (only by owner)
 exports.updateProduct = async (req, res) => {
   try {
-    // Commented out authentication for testing
-    // const userId = req.user?.id;
-    // if (!userId) {
-    //   return res.status(401).json(formatResponse(false, null, '', 'Unauthorized'));
-    // }
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json(formatResponse(false, null, '', 'Unauthorized'));
+    }
 
     const { id } = req.params;
     if (!id || isNaN(Number(id))) {
       return res.status(400).json(formatResponse(false, null, '', 'Invalid product ID'));
     }
 
-    // For testing, you can use a fixed userId or skip owner check
-    // const userId = 1; // <-- Set your test user ID here
-
-    // Check ownership (optional for testing)
-    // const [ownerRows] = await db.query('SELECT seller_id FROM products WHERE id = ?', [id]);
-    // if (ownerRows.length === 0) {
-    //   return res.status(404).json(formatResponse(false, null, '', 'Product not found'));
-    // }
-    // if (ownerRows[0].seller_id !== userId) {
-    //   return res.status(403).json(formatResponse(false, null, '', 'Forbidden: Not product owner'));
-    // }
+    // Check ownership
+    const [ownerRows] = await db.query('SELECT seller_id FROM products WHERE id = ?', [id]);
+    if (ownerRows.length === 0) {
+      return res.status(404).json(formatResponse(false, null, '', 'Product not found'));
+    }
+    if (ownerRows[0].seller_id !== userId) {
+      return res.status(403).json(formatResponse(false, null, '', 'Forbidden: Not product owner'));
+    }
 
     // Validate input
     const allowedFields = [
@@ -336,27 +329,18 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
   try {
     const userId = req.user?.id;
-    const { id } = req.params;
-    
     if (!userId) {
       return res.status(401).json(formatResponse(false, null, '', 'Unauthorized'));
     }
-    
-    const productId = parseInt(id);
-    if (isNaN(productId) || productId <= 0) {
+    const { id } = req.params;
+    if (!id || isNaN(Number(id))) {
       return res.status(400).json(formatResponse(false, null, '', 'Invalid product ID'));
     }
-
     // Check ownership
-    const [ownerRows] = await db.execute(
-      'SELECT seller_id FROM products WHERE id = ? AND status = "available"',
-      [productId]
-    );
-    
+    const [ownerRows] = await db.query('SELECT seller_id FROM products WHERE id = ?', [id]);
     if (ownerRows.length === 0) {
       return res.status(404).json(formatResponse(false, null, '', 'Product not found'));
     }
-    
     if (ownerRows[0].seller_id !== userId) {
       return res.status(403).json(formatResponse(false, null, '', 'Forbidden: Not product owner'));
     }
