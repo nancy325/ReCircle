@@ -2,10 +2,10 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 require('dotenv').config();
 
-// Initialize Razorpay instance
+// Initialize Razorpay instance with demo credentials
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_demo_key_for_development',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || 'demo_secret_for_development_only',
 });
 
 // Create Razorpay order
@@ -33,7 +33,7 @@ const createOrder = async (req, res) => {
     res.status(200).json({
       success: true,
       order,
-      key: process.env.RAZORPAY_KEY_ID
+      key: process.env.RAZORPAY_KEY_ID || 'rzp_test_demo_key_for_development'
     });
 
   } catch (error) {
@@ -62,7 +62,7 @@ const verifyPayment = async (req, res) => {
     // Create expected signature
     const sign = razorpay_order_id + '|' + razorpay_payment_id;
     const expectedSign = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || 'demo_secret_for_development_only')
       .update(sign.toString())
       .digest('hex');
 

@@ -1,9 +1,19 @@
 const express = require('express');
 const { authenticateToken } = require('../middleware/auth');
-const{ getOrCreateCart } = require('../controller/cartController');
+const { getCart, addItemToCart, updateCartItem, removeItemFromCart } = require('../controller/cartController');
 
 const router = express.Router();
 
-router.get('/', authenticateToken, getOrCreateCart);
+// Get user's cart
+router.get('/', authenticateToken, getCart);
+
+// Add item to cart
+router.post('/items', authenticateToken, addItemToCart);
+
+// Update cart item
+router.put('/items/:itemId', authenticateToken, updateCartItem);
+
+// Remove item from cart
+router.delete('/items/:itemId', authenticateToken, removeItemFromCart);
 
 module.exports = router;

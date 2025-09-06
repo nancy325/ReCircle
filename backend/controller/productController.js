@@ -348,7 +348,7 @@ exports.deleteProduct = async (req, res) => {
     // Soft delete: set status to 'deleted'
     const [result] = await db.execute(
       'UPDATE products SET status = "deleted", updated_at = NOW() WHERE id = ?',
-      [productId]
+      [id]
     );
 
     if (result.affectedRows === 0) {
