@@ -325,7 +325,7 @@ export function AddProduct() {
                   <Checkbox
                     id="originalPackaging"
                     checked={formData.originalPackaging}
-                    onCheckedChange={(checked) => handleInputChange("originalPackaging", checked as boolean)}
+                    onCheckedChange={(checked: boolean) => handleInputChange("originalPackaging", checked)}
                   />
                   <Label htmlFor="originalPackaging">Original Packaging Included</Label>
                 </div>
@@ -334,7 +334,7 @@ export function AddProduct() {
                   <Checkbox
                     id="manualIncluded"
                     checked={formData.manualIncluded}
-                    onCheckedChange={(checked) => handleInputChange("manualIncluded", checked as boolean)}
+                    onCheckedChange={(checked: boolean) => handleInputChange("manualIncluded", checked)}
                   />
                   <Label htmlFor="manualIncluded">Manual/Instructions Included</Label>
                 </div>
