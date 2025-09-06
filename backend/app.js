@@ -16,11 +16,7 @@ app.use("/api/products", product);
 
 const db = require('./db');
 
-// Example query
-db.query('SELECT 1 + 1 AS solution', (err, results) => {
-  if (err) throw err;
-  console.log('The solution is: ', results[0].solution);
-});
+
 
 
 module.exports = app;
