@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Sep 06, 2025 at 04:20 AM
+-- Generation Time: Sep 06, 2025 at 07:52 AM
 -- Server version: 9.1.0
 -- PHP Version: 8.2.26
 
@@ -170,6 +170,20 @@ CREATE TABLE IF NOT EXISTS `products` (
   `title` varchar(255) NOT NULL,
   `description` text NOT NULL,
   `price` decimal(10,2) NOT NULL,
+  `quantity` int DEFAULT '1',
+  `condition` enum('new','like_new','good','fair','poor') NOT NULL DEFAULT 'good',
+  `year_of_manufacture` int DEFAULT NULL,
+  `brand` varchar(100) DEFAULT NULL,
+  `model` varchar(100) DEFAULT NULL,
+  `length_cm` decimal(6,2) DEFAULT NULL,
+  `width_cm` decimal(6,2) DEFAULT NULL,
+  `height_cm` decimal(6,2) DEFAULT NULL,
+  `weight_kg` decimal(6,2) DEFAULT NULL,
+  `material` varchar(100) DEFAULT NULL,
+  `color` varchar(50) DEFAULT NULL,
+  `has_original_packaging` tinyint(1) DEFAULT '0',
+  `has_manual` tinyint(1) DEFAULT '0',
+  `working_condition_description` text,
   `category_id` int NOT NULL,
   `seller_id` int NOT NULL,
   `status` enum('available','sold','pending') DEFAULT 'available',
