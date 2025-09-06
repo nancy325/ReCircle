@@ -9,7 +9,7 @@ const authenticateToken = async (req, res, next) => {
     if (!token) {
       return res.status(401).json({ error: 'Access token required' });
     }
-
+console.log("Token:", token);
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log("SECRET:", process.env.JWT_SECRET);
 console.log("Decoded:", decoded);
