@@ -12,9 +12,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Badge } from "@/components/ui/badge"
 import { useData } from "@/contexts/data-context"
 import { useAuth } from "@/contexts/auth-context"
-import { ArrowLeft, Upload, Plus } from "lucide-react"
+import { ArrowLeft, Upload, Plus, X, Image as ImageIcon } from "lucide-react"
 
 export function AddProduct() {
   const router = useRouter()
@@ -28,6 +29,7 @@ export function AddProduct() {
     description: "",
     price: "",
     image: "",
+    images: [] as string[],
     quantity: "1",
     condition: "",
     yearOfManufacture: "",
@@ -59,6 +61,7 @@ export function AddProduct() {
       description: formData.description,
       price: Number.parseFloat(formData.price),
       image: formData.image || "/product-placeholder.png",
+      images: formData.images.length > 0 ? formData.images : [formData.image || "/product-placeholder.png"],
       sellerId: user.id,
       sellerName: user.username,
       quantity: Number.parseInt(formData.quantity) || 1,
@@ -86,6 +89,40 @@ export function AddProduct() {
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+
+    const newImages: string[] = []
+    Array.from(files).forEach((file) => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          const result = event.target?.result as string
+          newImages.push(result)
+          
+          setFormData((prev) => ({
+            ...prev,
+            images: [...prev.images, ...newImages],
+            image: prev.image || result, // Set first image as main image if none set
+          }))
+        }
+        reader.readAsDataURL(file)
+      }
+    })
+  }
+
+  const removeImage = (index: number) => {
+    setFormData((prev) => {
+      const newImages = prev.images.filter((_, i) => i !== index)
+      return {
+        ...prev,
+        images: newImages,
+        image: newImages[0] || "", // Set first remaining image as main image
+      }
+    })
   }
 
   const isFormValid =
@@ -325,7 +362,7 @@ export function AddProduct() {
                   <Checkbox
                     id="originalPackaging"
                     checked={formData.originalPackaging}
-                    onCheckedChange={(checked: boolean) => handleInputChange("originalPackaging", checked)}
+                    onCheckedChange={(checked) => handleInputChange("originalPackaging", checked as boolean)}
                   />
                   <Label htmlFor="originalPackaging">Original Packaging Included</Label>
                 </div>
@@ -334,7 +371,7 @@ export function AddProduct() {
                   <Checkbox
                     id="manualIncluded"
                     checked={formData.manualIncluded}
-                    onCheckedChange={(checked: boolean) => handleInputChange("manualIncluded", checked)}
+                    onCheckedChange={(checked) => handleInputChange("manualIncluded", checked as boolean)}
                   />
                   <Label htmlFor="manualIncluded">Manual/Instructions Included</Label>
                 </div>
@@ -353,21 +390,95 @@ export function AddProduct() {
               </div>
             </div>
 
-            {/* Image Upload Placeholder */}
-            <div className="space-y-2">
-              <Label htmlFor="image">Product Image</Label>
-              <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+            {/* Image Upload */}
+            <div className="space-y-4">
+              <Label>Product Images</Label>
+              
+              {/* Upload Area */}
+              <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors">
                 <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <p className="text-sm text-muted-foreground mb-2">Upload product photos</p>
-                <p className="text-xs text-muted-foreground">For demo purposes, a placeholder image will be used</p>
-                <Input
-                  id="image"
-                  type="url"
-                  placeholder="Or paste image URL (optional)"
-                  className="mt-4"
-                  value={formData.image}
-                  onChange={(e) => handleInputChange("image", e.target.value)}
+                <p className="text-xs text-muted-foreground mb-4">Select multiple images to show different angles</p>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  id="image-upload"
                 />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => document.getElementById('image-upload')?.click()}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Choose Images
+                </Button>
+              </div>
+
+              {/* Image Preview Grid */}
+              {formData.images.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Uploaded Images ({formData.images.length})</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {formData.images.map((image, index) => (
+                      <div key={index} className="relative group">
+                        <div className="aspect-square rounded-lg overflow-hidden border">
+                          <img
+                            src={image}
+                            alt={`Product image ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeImage(index)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                        {index === 0 && (
+                          <div className="absolute bottom-1 left-1">
+                            <Badge variant="secondary" className="text-xs">Main</Badge>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* URL Input Fallback */}
+              <div className="space-y-2">
+                <Label htmlFor="image-url" className="text-sm">Or add image URL</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="image-url"
+                    type="url"
+                    placeholder="Paste image URL"
+                    value={formData.image}
+                    onChange={(e) => handleInputChange("image", e.target.value)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      if (formData.image) {
+                        setFormData(prev => ({
+                          ...prev,
+                          images: [...prev.images, formData.image],
+                          image: ""
+                        }))
+                      }
+                    }}
+                    disabled={!formData.image}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -401,15 +512,3 @@ export function AddProduct() {
     </div>
   )
 }
-
-const addProduct = async (product: any, token: string) => {
-  const res = await fetch('http://localhost:5000/api/products', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(product),
-  });
-  return await res.json();
-};

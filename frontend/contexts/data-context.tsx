@@ -8,7 +8,8 @@ export interface Product {
   price: number
   description: string
   category: "Clothes" | "Electronics" | "Furniture"
-  image: string
+  image: string // Keep for backward compatibility
+  images?: string[] // New field for multiple images
   sellerId: string
   sellerName: string
   createdAt: string
@@ -69,9 +70,10 @@ interface DataContextType {
   addToCart: (product: Product) => void
   removeFromCart: (productId: string) => void
   purchaseCart: () => void
+  isInCart: (productId: string) => boolean
   sendMessage: (chatId: string, message: string, senderId: string) => void
   createChat: (productId: string, sellerId: string, buyerId: string) => string
-  searchProducts: (query: string, category?: string) => Product[]
+  searchProducts: (query: string, category?: string, excludeUserId?: string) => Product[]
   toggleFavorite: (productId: string) => void
   isFavorite: (productId: string) => boolean
 }
@@ -87,6 +89,7 @@ const mockProducts: Product[] = [
     description: "Genuine leather jacket in excellent condition. Perfect for fall weather.",
     category: "Clothes",
     image: "/vintage-leather-jacket.png",
+    images: ["/vintage-leather-jacket.png", "/placeholder.jpg", "/placeholder.jpg"],
     sellerId: "2",
     sellerName: "jane_smith",
     createdAt: "2024-01-15T10:00:00Z",
@@ -107,6 +110,7 @@ const mockProducts: Product[] = [
     description: "13-inch MacBook Pro with 8GB RAM and 256GB SSD. Great for work and study.",
     category: "Electronics",
     image: "/macbook-pro-laptop.png",
+    images: ["/macbook-pro-laptop.png", "/placeholder.jpg", "/placeholder.jpg"],
     sellerId: "1",
     sellerName: "john_doe",
     createdAt: "2024-01-14T15:30:00Z",
@@ -133,6 +137,7 @@ const mockProducts: Product[] = [
     description: "Beautiful mid-century modern chair in walnut wood. Minor wear but very sturdy.",
     category: "Furniture",
     image: "/mid-century-modern-chair.jpg",
+    images: ["/mid-century-modern-chair.jpg", "/placeholder.jpg", "/placeholder.jpg"],
     sellerId: "2",
     sellerName: "jane_smith",
     createdAt: "2024-01-13T09:15:00Z",
@@ -198,6 +203,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
       ...productData,
       id: Date.now().toString(),
       createdAt: new Date().toISOString(),
+      // Ensure images array exists and has at least the main image
+      images: productData.images && productData.images.length > 0 
+        ? productData.images 
+        : [productData.image || "/product-placeholder.png"],
     }
     setProducts((prev) => [newProduct, ...prev])
   }
@@ -214,7 +223,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setCart((prev) => {
       const existing = prev.find((item) => item.product.id === product.id)
       if (existing) {
-        return prev.map((item) => (item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item))
+        // Don't add more if already in cart - limit to 1 per product
+        return prev
       }
       return [...prev, { product, quantity: 1 }]
     })
@@ -222,6 +232,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const removeFromCart = (productId: string) => {
     setCart((prev) => prev.filter((item) => item.product.id !== productId))
+  }
+
+  const isInCart = (productId: string): boolean => {
+    return cart.some((item) => item.product.id === productId)
   }
 
   const purchaseCart = () => {
@@ -280,7 +294,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     )
   }
 
-  const searchProducts = (query: string, category?: string): Product[] => {
+  const searchProducts = (query: string, category?: string, excludeUserId?: string): Product[] => {
     return products.filter((product) => {
       const matchesQuery =
         query === "" ||
@@ -289,7 +303,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
       const matchesCategory = !category || category === "All" || product.category === category
 
-      return matchesQuery && matchesCategory
+      const isNotOwnProduct = !excludeUserId || product.sellerId !== excludeUserId
+
+      return matchesQuery && matchesCategory && isNotOwnProduct
     })
   }
 
@@ -320,6 +336,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         addToCart,
         removeFromCart,
         purchaseCart,
+        isInCart,
         sendMessage,
         createChat,
         searchProducts,
