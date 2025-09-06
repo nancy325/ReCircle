@@ -12,28 +12,27 @@ import { Separator } from "@/components/ui/separator"
 import { useData } from "@/contexts/data-context"
 import { useAuth } from "@/contexts/auth-context"
 import { formatPrice } from "@/lib/currency"
+import { ImageSlider } from "@/components/ui/image-slider"
 import {
   ArrowLeft,
   MessageCircle,
   ShoppingCart,
   Calendar,
   User,
-  ChevronLeft,
-  ChevronRight,
   Package,
   Ruler,
   Weight,
   Palette,
   CheckCircle,
   XCircle,
+  Heart,
 } from "lucide-react"
 
 export function ProductDetail() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  const { products, addToCart, createChat } = useData()
+  const { products, addToCart, createChat, toggleFavorite, isFavorite, isInCart } = useData()
   const { user } = useAuth()
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   const product = products.find((p) => p.id === id)
 
@@ -57,6 +56,10 @@ export function ProductDetail() {
     addToCart(product)
   }
 
+  const handleToggleFavorite = () => {
+    toggleFavorite(product.id)
+  }
+
   const handleMessageSeller = () => {
     if (user && product.sellerId !== user.id) {
       const chatId = createChat(product.id, product.sellerId, user.id)
@@ -67,14 +70,6 @@ export function ProductDetail() {
   const isOwnProduct = user?.id === product.sellerId
 
   const images = product.images && product.images.length > 0 ? product.images : [product.image || "/placeholder.svg"]
-
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % images.length)
-  }
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
-  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -88,58 +83,7 @@ export function ProductDetail() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-4">
-          {/* Main Image */}
-          <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
-            <img
-              src={images[currentImageIndex] || "/placeholder.svg"}
-              alt={`${product.title} - Image ${currentImageIndex + 1}`}
-              className="w-full h-full object-cover"
-            />
-            {images.length > 1 && (
-              <>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
-                  onClick={prevImage}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
-                  onClick={nextImage}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-background/80 px-2 py-1 rounded text-xs">
-                  {currentImageIndex + 1} / {images.length}
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Image Thumbnails */}
-          {images.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto">
-              {images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentImageIndex(index)}
-                  className={`flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 transition-colors ${
-                    index === currentImageIndex ? "border-primary" : "border-muted"
-                  }`}
-                >
-                  <img
-                    src={image || "/placeholder.svg"}
-                    alt={`Thumbnail ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
+          <ImageSlider images={images} alt={product.title} />
         </div>
 
         {/* Product Information */}
@@ -183,14 +127,37 @@ export function ProductDetail() {
           <div className="space-y-3">
             {!isOwnProduct && (
               <>
-                <Button onClick={handleAddToCart} size="lg" className="w-full">
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Add to Cart
-                </Button>
-                <Button onClick={handleMessageSeller} variant="outline" size="lg" className="w-full bg-transparent">
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Message Seller
-                </Button>
+                {isInCart(product.id) ? (
+                  <Button asChild size="lg" className="w-full" variant="outline">
+                    <Link href="/cart">
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      Go to Cart
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button onClick={handleAddToCart} size="lg" className="w-full">
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    Add to Cart
+                  </Button>
+                )}
+                <div className="flex gap-2">
+                  <Button onClick={handleMessageSeller} variant="outline" size="lg" className="flex-1 bg-transparent">
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Message Seller
+                  </Button>
+                  <Button 
+                    onClick={handleToggleFavorite} 
+                    variant="outline" 
+                    size="lg"
+                    className="px-3"
+                  >
+                    <Heart 
+                      className={`h-4 w-4 ${
+                        isFavorite(product.id) ? "fill-red-500 text-red-500" : "text-muted-foreground"
+                      }`} 
+                    />
+                  </Button>
+                </div>
               </>
             )}
             {isOwnProduct && (

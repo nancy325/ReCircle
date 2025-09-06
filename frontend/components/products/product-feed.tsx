@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import type React from "react"
 
 import { useState, useMemo } from "react"
 import Link from "next/link"
@@ -10,17 +10,23 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useData } from "@/contexts/data-context"
+import { useAuth } from "@/contexts/auth-context"
 import { formatPrice } from "@/lib/currency"
 import { Search, Filter, Plus, Leaf, Recycle, Heart, TrendingUp } from "lucide-react"
 
 export function ProductFeed() {
-  const { products, searchProducts, addToCart, toggleFavorite, isFavorite } = useData()
+  const { products, searchProducts, addToCart, toggleFavorite, isFavorite, isInCart } = useData()
+  const { user } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("All")
 
   const filteredProducts = useMemo(() => {
-    return searchProducts(searchQuery, selectedCategory === "All" ? undefined : selectedCategory)
-  }, [searchProducts, searchQuery, selectedCategory])
+    return searchProducts(
+      searchQuery, 
+      selectedCategory === "All" ? undefined : selectedCategory,
+      user?.id // Exclude current user's own products
+    )
+  }, [searchProducts, searchQuery, selectedCategory, user?.id])
 
   const categories = [
     { name: "All", image: "/all-categories-grid.jpg", icon: "🏪" },
@@ -45,12 +51,6 @@ export function ProductFeed() {
 
   const handleCategorySelect = (categoryName: string) => {
     setSelectedCategory(categoryName)
-  }
-
-  const fetchProducts = async () => {
-    const res = await fetch("http://localhost:5000/api/products")
-    const data = await res.json()
-    return data
   }
 
   return (
@@ -209,25 +209,27 @@ export function ProductFeed() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredProducts.map((product) => (
             <Card key={product.id} className="group hover:shadow-lg transition-shadow duration-200">
-              <Link href={`/product/${product.id}`}>
-                <div className="aspect-square overflow-hidden rounded-t-lg relative">
-                  <img
-                    src={product.image || "/placeholder.svg"}
-                    alt={product.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                  />
-                  <button
-                    onClick={(e) => handleToggleFavorite(e, product.id)}
-                    className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white shadow-md transition-all duration-200 hover:scale-110"
-                  >
-                    <Heart
-                      className={`h-4 w-4 transition-colors ${
-                        isFavorite(product.id) ? "fill-red-500 text-red-500" : "text-gray-600 hover:text-red-500"
-                      }`}
+              <div className="relative">
+                <Link href={`/product/${product.id}`}>
+                  <div className="aspect-square overflow-hidden rounded-t-lg">
+                    <img
+                      src={product.images && product.images.length > 0 ? product.images[0] : product.image || "/placeholder.svg"}
+                      alt={product.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                     />
-                  </button>
-                </div>
-              </Link>
+                  </div>
+                </Link>
+                <button
+                  onClick={(e) => handleToggleFavorite(e, product.id)}
+                  className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white shadow-md transition-all duration-200 hover:scale-110"
+                >
+                  <Heart
+                    className={`h-4 w-4 transition-colors ${
+                      isFavorite(product.id) ? "fill-red-500 text-red-500" : "text-gray-600 hover:text-red-500"
+                    }`}
+                  />
+                </button>
+              </div>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-2">
                   <Badge variant="secondary" className="text-xs">
@@ -252,9 +254,15 @@ export function ProductFeed() {
                   <Button asChild variant="outline" size="sm" className="flex-1 bg-transparent">
                     <Link href={`/product/${product.id}`}>View Details</Link>
                   </Button>
-                  <Button onClick={() => handleAddToCart(product)} size="sm" className="flex-1">
-                    Add to Cart
-                  </Button>
+                  {isInCart(product.id) ? (
+                    <Button asChild size="sm" className="flex-1" variant="outline">
+                      <Link href="/cart">Go to Cart</Link>
+                    </Button>
+                  ) : (
+                    <Button onClick={() => handleAddToCart(product)} size="sm" className="flex-1">
+                      Add to Cart
+                    </Button>
+                  )}
                 </div>
               </CardFooter>
             </Card>
