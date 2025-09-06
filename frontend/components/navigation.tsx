@@ -9,6 +9,9 @@ import { useAuth } from "@/contexts/auth-context"
 import { useData } from "@/contexts/data-context"
 import { ShoppingCart, MessageCircle, Plus, User, LogOut, Leaf } from "lucide-react"
 
+import Image from 'next/image';
+
+
 export function Navigation() {
   const { user, logout } = useAuth()
   const { cart } = useData()
@@ -28,35 +31,39 @@ export function Navigation() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 text-xl font-bold text-primary">
-            <Leaf className="h-6 w-6" />
-            EcoFinds
+            {/* LOGO */}
+            <Image
+              src="/LOGOOO.png"
+              alt="ReCircle Logo"
+              width={42}
+              height={42}
+              className="h-12 w-12"
+              priority
+            />
+            ReCircle
           </Link>
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-6">
             <Link
               href="/"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                pathname === "/" ? "text-primary" : "text-muted-foreground"
-              }`}
+              className={`text-sm font-medium transition-colors hover:text-primary ${pathname === "/" ? "text-primary" : "text-muted-foreground"
+                }`}
             >
               Browse
             </Link>
             <Link
               href="/my-listings"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                pathname === "/my-listings" ? "text-primary" : "text-muted-foreground"
-              }`}
+              className={`text-sm font-medium transition-colors hover:text-primary ${pathname === "/my-listings" ? "text-primary" : "text-muted-foreground"
+                }`}
             >
               My Listings
             </Link>
             <Link
               href="/chats"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                pathname === "/chats" ? "text-primary" : "text-muted-foreground"
-              }`}
+              className={`text-sm font-medium transition-colors hover:text-primary ${pathname === "/chats" ? "text-primary" : "text-muted-foreground"
+                }`}
             >
               Messages
             </Link>
@@ -90,15 +97,10 @@ export function Navigation() {
 
             {/* User Menu */}
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.username} />
-                    <AvatarFallback>{user?.username?.charAt(0).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                </Button>
+              <DropdownMenuTrigger className="h-8 w-8 rounded-full bg-transparent hover:bg-accent hover:text-accent-foreground inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]">
+                <User className="h-4 w-4" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuContent className="w-56" align="end">
                 <DropdownMenuItem asChild>
                   <Link href="/dashboard" className="flex items-center">
                     <User className="mr-2 h-4 w-4" />

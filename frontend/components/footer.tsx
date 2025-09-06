@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { Leaf, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from "lucide-react"
+import Image from "next/image"
 
 export function Footer() {
   return (
@@ -9,10 +10,17 @@ export function Footer() {
           {/* Brand Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <Leaf className="h-5 w-5 text-primary-foreground" />
+              <div className="w-10 h-10 flex items-center justify-center">
+                <Image
+                  src="/LOGOOO.png"
+                  alt="ReCircle Logo"
+                  width={42}
+                  height={42}
+                  className="h-12 w-12"
+                  priority
+                />
               </div>
-              <span className="text-xl font-bold text-foreground">EcoFinds</span>
+              <span className="text-xl font-bold text-foreground">ReCircle</span>
             </div>
             <p className="text-muted-foreground text-sm leading-relaxed">
               India's premier sustainable marketplace for second-hand goods. Promoting circular economy and reducing
@@ -125,7 +133,7 @@ export function Footer() {
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground text-sm">support@ecofinds.in</span>
+                <span className="text-muted-foreground text-sm">support@ReCircle.in</span>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-muted-foreground" />
@@ -149,7 +157,7 @@ export function Footer() {
         <div className="border-t border-border mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-muted-foreground text-sm">
-              © 2024 EcoFinds. All rights reserved. Made with ❤️ for a sustainable future.
+              © 2025 ReCircle. All rights reserved. <b>Made to create impact for a sustainable future.</b>
             </div>
             <div className="flex gap-6">
               <Link href="/privacy" className="text-muted-foreground hover:text-primary transition-colors text-sm">
